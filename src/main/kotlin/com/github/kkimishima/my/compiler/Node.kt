@@ -26,6 +26,38 @@ sealed class Node {
     fun of(nodeKind: NodeKind, left: Node, right: Node): Node =
       Reserved(nodeKind, left, right)
 
+    fun addNumNode(tokenList: TokenList, node: Node): Node =
+      when (node) {
+        is Num -> of(tokenList.headNumInt())
+        is Reserved -> of(node.nodeKind, of(tokenList.headNumInt()), node)
+        else -> throw RuntimeException("Nodeが初期化されていません")
+      }
+
+    fun addReserved(nodeKind: NodeKind, tokenList: TokenList, node: Node): Node =
+      when (node) {
+        is Num -> {
+          val a = createAst(tokenList.tail(), node)
+          val b = of(nodeKind, node, a)
+          createAst(tokenList.tail().tail(), b)
+        }
+        is Reserved -> {
+          val a = createAst(tokenList.tail(), node.left)
+          val c = of(nodeKind, a, node)
+          createAst(tokenList.tail().tail(), c)
+        }
+        else -> throw RuntimeException("2")
+      }
+
+    fun initNilNode(tokenList: TokenList, node: Node, f: (TokenList, Node) -> Node): Node =
+      when {
+        node.isNil() && tokenList.isFirstNum() -> {
+          createAst(tokenList.tail(), of(tokenList.headNumInt()))
+        }
+        else -> {
+          f(tokenList, node)
+        }
+      }
+
     fun forEach(node: Node) {
       when (node) {
         is Num -> println(node.num)
@@ -38,56 +70,23 @@ sealed class Node {
       }
     }
 
-    tailrec fun createAst(tokenList: TokenList, node: Node = emptyOf()): Node {
-      return when (tokenList) {
-        is TokenList.Nil -> node
-        is TokenList.Cons -> {
-          when {
-            node.isNil() && tokenList.isFirstNum() -> createAst(tokenList.tail(), of(tokenList.headNumInt()))
-            else -> {
-              when {
-                tokenList.isFirstNum() -> {
-                  when (val n = node) {
-                    is Num -> of(tokenList.headNumInt())
-                    is Reserved -> of(n.nodeKind, of(tokenList.headNumInt()), n)
-                    else -> throw RuntimeException("1")
-                  }
-                }
-                tokenList.isHeadReservedValue() == "+" -> {
-                  when (val n = node) {
-                    is Num -> {
-                      val c = of(tokenList.tail().headNumInt())
-                      val a = createAst(tokenList.tail(), n)
-                      val b = of(NodeKind.ADD, n, a)
-                      createAst(tokenList.tail().tail(), b)
-                    }
-                    is Reserved -> {
-                      val a = createAst(tokenList.tail(), n)
-                      createAst(tokenList.tail().tail(), a)
-                    }
-                    else -> throw RuntimeException("2")
-                  }
-                }
-                tokenList.isHeadReservedValue() == "-" -> {
-                  when (val n = node) {
-                    is Num -> {
-                      val a = createAst(tokenList.tail(), n)
-                      val b = of(NodeKind.SUB, n, a)
-                      createAst(tokenList.tail().tail(), b)
-                    }
-                    is Reserved -> {
-                      val a = createAst(tokenList.tail(), n)
-                      createAst(tokenList.tail().tail(), a)
-                    }
-                    else -> throw RuntimeException("3")
-                  }
-                }
-                else -> throw RuntimeException("4")
-              }
-            }
-          }
+    fun nextInitNilNode(tokenList: TokenList, node: Node, f: (TokenList, Node) -> Node): Node =
+      tokenList.next(node) { tokenList1 ->
+        initNilNode(tokenList1, node, f)
+      }
+
+
+    fun createAst(tokenList: TokenList, node: Node = emptyOf()): Node {
+      return nextInitNilNode(tokenList, node) { t, n ->
+        when {
+          t.isFirstNum() -> addNumNode(t, n)
+          t.isHeadReservedValue() == "+" -> addReserved(NodeKind.ADD, t, n)
+          t.isHeadReservedValue() == "-" -> addReserved(NodeKind.SUB, t, n)
+          else -> throw RuntimeException("定義外のトークン")
         }
       }
     }
   }
 }
+
+

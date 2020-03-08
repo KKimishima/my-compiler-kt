@@ -22,6 +22,12 @@ sealed class TokenList {
   data class Cons(val token: Token, val tokenList: TokenList) : TokenList()
   object Nil : TokenList()
 
+  fun next(node: Node, f: (TokenList) -> Node): Node =
+    when (this) {
+      is Nil -> node
+      is Cons -> f(this)
+    }
+
   fun headNumInt(): Int =
     when (this) {
       is Nil -> throw RuntimeException("")
