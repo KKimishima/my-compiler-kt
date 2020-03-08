@@ -6,5 +6,5 @@ fun main(args: Array<String>) {
   }
   val tokeList = tokenize(charArray = args[0].toCharArray())
   val node = Node.createAst(tokeList)
-  Node.forEach(node)
+  ByteCodeGenerator(node)
 }

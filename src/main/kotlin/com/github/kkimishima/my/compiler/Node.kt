@@ -70,6 +70,18 @@ sealed class Node {
       }
     }
 
+    fun forEach(node: Node, numFn: (Int) -> Unit, reservedFn: (NodeKind) -> Unit) {
+      when (node) {
+        is Num -> numFn(node.num)
+        is Reserved -> {
+          forEach(node.right, numFn, reservedFn)
+          forEach(node.left, numFn, reservedFn)
+          reservedFn(node.nodeKind)
+        }
+        else -> throw RuntimeException("")
+      }
+    }
+
     fun nextInitNilNode(tokenList: TokenList, node: Node, f: (TokenList, Node) -> Node): Node =
       tokenList.next(node) { tokenList1 ->
         initNilNode(tokenList1, node, f)
@@ -88,5 +100,4 @@ sealed class Node {
     }
   }
 }
-
 

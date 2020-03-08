@@ -29,12 +29,10 @@ test {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-// https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.0'
-    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.0'
-
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.ow2.asm:asm:7.3.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.0")
 }
 
 compileKotlin {
