@@ -37,7 +37,7 @@ sealed class Node {
       when (node) {
         is Num -> {
           val a = createAst(tokenList.tail(), node)
-          val b = of(nodeKind, node, a)
+          val b = of(nodeKind, a, node)
           createAst(tokenList.tail().tail(), b)
         }
         is Reserved -> {
@@ -86,7 +86,6 @@ sealed class Node {
       tokenList.next(node) { tokenList1 ->
         initNilNode(tokenList1, node, f)
       }
-
 
     fun createAst(tokenList: TokenList, node: Node = emptyOf()): Node {
       return nextInitNilNode(tokenList, node) { t, n ->
